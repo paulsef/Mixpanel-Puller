@@ -1,10 +1,10 @@
 import argparse
 from lib.mixpanel_data_puller import extract_dates, stringify_date, parse_date
-import datetime
+from datetime import timedelta
 import uuid
 import subprocess
-import time
 from retrying import retry
+import datetime
 
 class Runner:
 
@@ -55,9 +55,9 @@ class Runner:
         if exit_code != 0:
             raise Exception("Error: Exit code %d found for command: %s" % (exit_code, cmd))
 
-    @timer
     @retry(stop_max_attempt_number=2)
     def put_s3_string_iter(self, string_iter, s3_filename, zip=False):
+        start = datetime.datetime.utcnow()
         tmp_file = "%s/%s.txt" % (self.args.tmpdir, str(uuid.uuid1()))
         f = open(tmp_file, 'w')
         for string in string_iter:
@@ -69,6 +69,9 @@ class Runner:
         print "Writing to s3"
         self.put_s3_file(tmp_file, s3_filename)
         self.rm(tmp_file)
+        seconds = (datetime.datetime.utcnow() - start).total_seconds()
+        if seconds < self.args.minimum_time:
+            raise ValueError("the function returned too quickly")
 
     def put_s3_string(self, string, s3_filename, zip=False):
         def string_iter():
@@ -82,12 +85,3 @@ class Runner:
         while start_date <= end_date:
             yield start_date
             start_date += datetime.timedelta(days=1)
-
-def timer(function, *args):
-    def timed():
-        start = datetime.datetime.utcnow()
-        function(*args)
-        seconds = (datetime.datetime.utcnow() - start).total_seconds()
-        if seconds < .99:
-            raise ValueError("the function returned too quickly")
-    return timed
