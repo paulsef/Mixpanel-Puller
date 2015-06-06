@@ -25,7 +25,15 @@ class Mixpanel(object):
         if data:
             self.endpoint = self.DATA_ENDPOINT
 
-    def request(self, methods, params, format='json', read_byte_size=1024000):
+    def stream_data(self, request_url, read_byte_size=1024000):
+        request = urllib.urlopen(request_url)
+        while True:
+            data = request.read(read_byte_size)
+            if len(data) == 0:
+                break
+            yield data
+
+    def get_url(self, methods, params, format='json'):
         """
             methods - List of methods to be joined, e.g. ['events', 'properties', 'values']
                       will give us http://mixpanel.com/api/2.0/events/properties/values/
@@ -38,15 +46,7 @@ class Mixpanel(object):
         params['sig'] = self.hash_args(params)
 
         request_url = '/'.join([self.endpoint, str(self.VERSION)] + methods) + '/?' + self.unicode_urlencode(params)
-
-        request = urllib.urlopen(request_url)
-
-        while True:
-            data = request.read(read_byte_size)
-            if len(data) == 0:
-                break
-            yield data
-
+        return request_url
 
     def unicode_urlencode(self, params):
         """

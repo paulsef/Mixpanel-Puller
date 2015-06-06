@@ -22,11 +22,20 @@ def stringify_date(d):
 
 def pull(start_date, end_date, api_key, api_secret):
     api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
-    data_iter = api.request(['export'], {
+    request_url = api.get_url(['export'], {
         'from_date': start_date,
         'to_date': end_date,
     })
+    data_iter = api.stream_data(request_url)
     return data_iter
+
+def get_url(start_date, end_date, api_key, api_secret):
+    api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
+    url = api.get_url(['export'], {
+        'from_date': start_date,
+        'to_date': end_date,
+    })
+    return url
 
 def run(argv):
     start_date = argv[0]
