@@ -23,7 +23,7 @@ class Runner:
                             help='Temporary directory')
         parser.add_argument('--dry', default=False, dest='dry', action='store_true',
                             help='dry mode')
-        parser.add_argument('--minimum-time', required=False, dest='minimum_time', help='if the API doesn\'t take minimum_time in seconds, try again')
+        parser.add_argument('--minimum-time', type=int, required=False, dest='minimum_time', help='if the API doesn\'t take minimum_time in seconds, try again')
 
     def parse_args(self, argv):
         parser = self.create_parser()
