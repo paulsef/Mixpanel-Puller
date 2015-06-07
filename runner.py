@@ -1,7 +1,7 @@
 import argparse
 from lib.mixpanel_data_puller import extract_dates, stringify_date, parse_date
 from datetime import timedelta
-import uuid
+import md5
 import subprocess
 import datetime
 import os
@@ -54,9 +54,16 @@ class Runner:
         exit_code = subprocess.call(cmd)
         if exit_code != 0:
             raise Exception("Error: Exit code %d found for command: %s" % (exit_code, cmd))
+    
+    def temp_filename(self):
+        m = md5.new()
+        m.update(str(self.args.startdate))
+        m.update(str(self.args.enddate))
+        return m.digest()
+
     def put_s3_string_iter(self, string_iter, s3_filename, request_url, zip=False):
         start = datetime.datetime.utcnow()
-        tmp_file = "%s/%s.txt" % (self.args.tmpdir, str(uuid.uuid1()))
+        tmp_file = "%s/%s.txt" % (self.args.tmpdir, self.temp_filename())
         f = open(tmp_file, 'w')
         for string in string_iter:
             f.write(string)
