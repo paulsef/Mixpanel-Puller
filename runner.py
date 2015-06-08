@@ -44,7 +44,7 @@ class Runner:
 
     def gzip(self, filename):
         gz_filname = "%s.gz" % filename
-        self.run_command(['gzip', filename])
+        self.run_command(['gzip', filename, "-f"])
         return gz_filname
 
     def run_command(self, cmd):
@@ -74,7 +74,8 @@ class Runner:
             s3_filename = "%s.gz" % s3_filename
 
         file_size = os.stat(tmp_file).st_size
-        if file_size < 5000000:
+        min_size_gb = .5
+        if file_size < (min_size_gb * 10e8):
             error_string = '\t'.join([str(start), str(seconds), str(file_size), str(request_url)])
             raise ValueError(error_string)
 
