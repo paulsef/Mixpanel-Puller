@@ -59,7 +59,7 @@ class Runner:
         m = md5.new()
         m.update(str(self.args.startdate))
         m.update(str(self.args.enddate))
-        return m.digest()
+        return m.hexdigest()
 
     def put_s3_string_iter(self, string_iter, s3_filename, request_url, zip=False):
         start = datetime.datetime.utcnow()
@@ -68,16 +68,16 @@ class Runner:
         for string in string_iter:
             f.write(string)
         f.close()
-
-        file_size = os.stat(tmp_file).st_size
         seconds = (datetime.datetime.utcnow() - start).total_seconds()
-        if seconds < self.args.minimum_time:
-            error_string = '\t'.join([str(start), str(seconds), str(file_size), str(request_url)])
-            raise ValueError(error_string)
-
         if zip:
             tmp_file = self.gzip(tmp_file)
             s3_filename = "%s.gz" % s3_filename
+
+        file_size = os.stat(tmp_file).st_size
+        if file_size < 5000000:
+            error_string = '\t'.join([str(start), str(seconds), str(file_size), str(request_url)])
+            raise ValueError(error_string)
+
         print "Writing to s3"
         self.put_s3_file(tmp_file, s3_filename)
         self.rm(tmp_file)
