@@ -23,14 +23,18 @@ class Runner:
                             help='Temporary directory')
         parser.add_argument('--dry', default=False, dest='dry', action='store_true',
                             help='dry mode')
-        parser.add_argument('--minimum-time', type=int, required=False, dest='minimum_time', help='if the API doesn\'t take minimum_time in seconds, try again')
+        parser.add_argument('--minimum-time', type=int, required=False, dest='minimum_time', 
+                            help='if the API doesn\'t take minimum_time in seconds, raise an error')
+        parser.add_argument('--minimum-size', type=float, required=False, dest='minimum_size', 
+                            help='in GB, if resulting compressed file size is less than this, raise an error')
+        parser.add_argument('--skip-s3', action='store_true', dest='skip_s3')
+        parser.add_argument('--events', default = [], nargs='*', help = "list of events to export, defaults to all events")
 
     def parse_args(self, argv):
         parser = self.create_parser()
         self.create_base_args(parser)
 
         self.args = parser.parse_args()
-
         self.bucket = self.args.bucket
         if self.bucket[-1] != '/':
             self.bucket += '/'
@@ -72,16 +76,18 @@ class Runner:
         if zip:
             tmp_file = self.gzip(tmp_file)
             s3_filename = "%s.gz" % s3_filename
-
-        file_size = os.stat(tmp_file).st_size
-        min_size_gb = .5
-        if file_size < (min_size_gb * 10e8):
+        if self.args.dry:
+            file_size = 0.0
+        else:
+            file_size = os.stat(tmp_file).st_size
+        if (self.args.minimum_size != None) and (file_size < (self.args.minimum_size * 10e8)):
             error_string = '\t'.join([str(start), str(seconds), str(file_size), str(request_url)])
             raise ValueError(error_string)
 
-        print "Writing to s3"
-        self.put_s3_file(tmp_file, s3_filename)
-        self.rm(tmp_file)
+        if not self.args.skip_s3:
+            print "Writing to s3"
+            self.put_s3_file(tmp_file, s3_filename)
+            self.rm(tmp_file)
 
     def put_s3_string(self, string, s3_filename, zip=False):
         def string_iter():

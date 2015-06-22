@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 import mixpanel_api
+import pdb
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -20,12 +21,17 @@ def parse_date(d_str):
 def stringify_date(d):
     return d.strftime(DATE_FORMAT)
 
-def pull(start_date, end_date, api_key, api_secret):
+def pull(start_date, end_date, api_key, api_secret, events):
     api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
-    request_url = api.get_url(['export'], {
+    api_params = {
         'from_date': start_date,
         'to_date': end_date,
-    })
+        'event': events
+    }
+    if events != []:
+        api_params['event'] = events
+    request_url = api.get_url(['export'], api_params)
+    print request_url
     data_iter = api.stream_data(request_url)
     return data_iter
 

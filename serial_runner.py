@@ -14,12 +14,13 @@ class SerialRunner(Runner):
     def pull_data(self, date):
         if self.args.dry:
             return "DRY_MODE"
-        return puller.pull(date, date, self.args.apikey, self.args.apisecret)
+        return puller.pull(date, date, self.args.apikey, self.args.apisecret, self.args.events)
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10, retry_on_exception=retry_if_value_error)
     def get_and_write(self, date):
         print "Pulling data for %s" % date
         request_url = puller.get_url(date, date, self.args.apikey, self.args.apisecret)
+        print request_url
         data_iter = self.pull_data(date)
         s3_output_file = "%s%s" % (self.output_bucket, date)
         try:

@@ -11,6 +11,7 @@ try:
     import json
 except ImportError:
     import simplejson as json
+import pdb
 
 class Mixpanel(object):
 
@@ -27,9 +28,11 @@ class Mixpanel(object):
 
     def stream_data(self, request_url, read_byte_size=1024000):
         request = urllib.urlopen(request_url)
+        print request.info().keys()
         while True:
             data = request.read(read_byte_size)
-            if len(data) == 0:
+            # if len(data) == 0:
+            if True:
                 break
             yield data
 
