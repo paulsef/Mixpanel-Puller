@@ -12,7 +12,7 @@ class SerialRunner(Runner):
     def pull_data(self, date):
         if self.args.dry:
             return "DRY_MODE"
-        return puller.pull(date, date, self.args.apikey, self.args.apisecret)
+        return puller.pull(date, date, self.args.apikey, self.args.apisecret, self.args.events)
 
     def pull_data_for_date_range(self):
         start_date, end_date = self.args.startdate, self.args.enddate

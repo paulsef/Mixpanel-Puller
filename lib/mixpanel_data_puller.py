@@ -20,12 +20,15 @@ def parse_date(d_str):
 def stringify_date(d):
     return d.strftime(DATE_FORMAT)
 
-def pull(start_date, end_date, api_key, api_secret):
+def pull(start_date, end_date, api_key, api_secret, events):
     api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
-    data_iter = api.request(['export'], {
+    api_params = {
         'from_date': start_date,
-        'to_date': end_date,
-    })
+        'to_date': end_date
+        }
+    if events != []:
+        api_params['event'] = events
+    data_iter = api.request(['export'], api_params)
     return data_iter
 
 def run(argv):
