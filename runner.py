@@ -6,6 +6,9 @@ import subprocess
 import datetime
 import os
 
+class ExportSizeException(Exception):
+    pass
+
 class Runner:
 
     def create_base_args(self, parser):
@@ -69,7 +72,7 @@ class Runner:
         start = datetime.datetime.utcnow()
         tmp_file = "%s/%s.txt" % (self.args.tmpdir, self.temp_filename())
         f = open(tmp_file, 'w')
-        f.write(string)
+        f.write(string.encode('UTF-8'))
         f.close()
         seconds = (datetime.datetime.utcnow() - start).total_seconds()
         if gzip:
@@ -81,7 +84,7 @@ class Runner:
             file_size = os.stat(tmp_file).st_size
         if (self.args.minimum_size != None) and (file_size < (self.args.minimum_size * 10e8)):
             error_string = '\t'.join([str(start), str(seconds), str(file_size), str(request_url)])
-            raise ValueError(error_string)
+            raise ExportSizeException(error_string)
 
         if not self.args.skip_s3:
             print "Writing to s3"

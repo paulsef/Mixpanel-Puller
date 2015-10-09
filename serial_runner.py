@@ -1,6 +1,6 @@
 import argparse
 import sys
-from runner import Runner
+from runner import Runner, ExportSizeException
 import lib.mixpanel_data_puller as puller
 from retrying import retry
 from check_errors import retry_if_value_error
@@ -25,7 +25,7 @@ class SerialRunner(Runner):
         s3_output_file = "%s%s" % (self.output_bucket, date)
         try:
             self.put_s3_string(data, s3_output_file, request_url, gzip=True)
-        except(ValueError), e:
+        except(ExportSizeException), e:
             error_logger(str(e))
             raise e
 
@@ -35,7 +35,7 @@ class SerialRunner(Runner):
             date = puller.stringify_date(date)
             try:
                 self.get_and_write(date)
-            except(ValueError):
+            except(runner.):
                 continue
 
 def error_logger(string):
