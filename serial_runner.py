@@ -35,7 +35,7 @@ class SerialRunner(Runner):
             date = puller.stringify_date(date)
             try:
                 self.get_and_write(date)
-            except(runner.):
+            except(ExportSizeException):
                 continue
 
 def error_logger(string):
