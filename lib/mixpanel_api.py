@@ -6,6 +6,7 @@
 
 import hashlib
 import urllib
+import requests
 import time
 try:
     import json
@@ -26,15 +27,9 @@ class Mixpanel(object):
         if data:
             self.endpoint = self.DATA_ENDPOINT
 
-    def stream_data(self, request_url, read_byte_size=1024000):
-        request = urllib.urlopen(request_url)
-        print request.info().keys()
-        while True:
-            data = request.read(read_byte_size)
-            # if len(data) == 0:
-            if True:
-                break
-            yield data
+    def get_data(self, request_url, read_byte_size=1024000):
+        request = requests.get(request_url)
+        return request.text
 
     def get_url(self, methods, params, format='json'):
         """

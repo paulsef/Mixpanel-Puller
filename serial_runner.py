@@ -21,10 +21,10 @@ class SerialRunner(Runner):
         print "Pulling data for %s" % date
         request_url = puller.get_url(date, date, self.args.apikey, self.args.apisecret)
         print request_url
-        data_iter = self.pull_data(date)
+        data = self.pull_data(date)
         s3_output_file = "%s%s" % (self.output_bucket, date)
         try:
-            self.put_s3_string_iter(data_iter, s3_output_file, request_url, zip=True)
+            self.put_s3_string(data, s3_output_file, request_url, gzip=True)
         except(ValueError), e:
             error_logger(str(e))
             raise e

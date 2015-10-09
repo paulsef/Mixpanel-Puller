@@ -65,15 +65,14 @@ class Runner:
         m.update(str(self.args.enddate))
         return m.hexdigest()
 
-    def put_s3_string_iter(self, string_iter, s3_filename, request_url, zip=False):
+    def put_s3_string(self, string, s3_filename, request_url, gzip=False):
         start = datetime.datetime.utcnow()
         tmp_file = "%s/%s.txt" % (self.args.tmpdir, self.temp_filename())
         f = open(tmp_file, 'w')
-        for string in string_iter:
-            f.write(string)
+        f.write(string)
         f.close()
         seconds = (datetime.datetime.utcnow() - start).total_seconds()
-        if zip:
+        if gzip:
             tmp_file = self.gzip(tmp_file)
             s3_filename = "%s.gz" % s3_filename
         if self.args.dry:
@@ -88,11 +87,6 @@ class Runner:
             print "Writing to s3"
             self.put_s3_file(tmp_file, s3_filename)
             self.rm(tmp_file)
-
-    def put_s3_string(self, string, s3_filename, zip=False):
-        def string_iter():
-            yield string
-        self.put_s3_string_iter(string_iter, s3_filename, zip)
 
     def put_s3_file(self, filename, bucket):
         self.run_command(("s3cmd put -r %s s3://%s" % (filename, bucket)).split())

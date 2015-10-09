@@ -25,15 +25,13 @@ def pull(start_date, end_date, api_key, api_secret, events):
     api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
     api_params = {
         'from_date': start_date,
-        'to_date': end_date,
-        'event': events
+        'to_date': end_date
     }
     if events != []:
         api_params['event'] = events
     request_url = api.get_url(['export'], api_params)
     print request_url
-    data_iter = api.stream_data(request_url)
-    return data_iter
+    return api.get_data(request_url)
 
 def get_url(start_date, end_date, api_key, api_secret):
     api = mixpanel_api.Mixpanel(api_key, api_secret, data=True)
