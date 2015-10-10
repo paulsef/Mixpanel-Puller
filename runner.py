@@ -75,6 +75,7 @@ class Runner:
         f.write(string.encode('UTF-8'))
         f.close()
         seconds = (datetime.datetime.utcnow() - start).total_seconds()
+        del string
         if gzip:
             tmp_file = self.gzip(tmp_file)
             s3_filename = "%s.gz" % s3_filename
