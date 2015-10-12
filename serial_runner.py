@@ -4,6 +4,11 @@ from runner import Runner, ExportSizeException
 import lib.mixpanel_data_puller as puller
 from retrying import retry
 from check_errors import retry_if_value_error
+from memory_profiler import profile
+
+
+def retry_if_export_size_error(exception):
+    return isinstance(exception, ExportSizeException)
 
 class SerialRunner(Runner):
 
@@ -16,7 +21,8 @@ class SerialRunner(Runner):
             return "DRY_MODE"
         return puller.pull(date, date, self.args.apikey, self.args.apisecret, self.args.events)
 
-    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10, retry_on_exception=retry_if_value_error)
+    @profile
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10, retry_on_exception=retry_if_export_size_error)
     def get_and_write(self, date):
         print "Pulling data for %s" % date
         request_url = puller.get_url(date, date, self.args.apikey, self.args.apisecret)
